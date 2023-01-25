@@ -9,7 +9,7 @@ url = requests.get('https://www.iihs.org/ratings/vehicle/volkswagen/golf-gti-4-d
 soup = BeautifulSoup(url.text, 'html.parser')
 # iihs = BeautifulSoup(html_doc, 'html.parser')
 
-iihs = soup.find_all('div', attrs={'class': 'hero-body'})
+iihs = soup.find('div', attrs={'class': 'hero-body'})
 
 file = open('iihs_test.csv', 'w', newline='')
 writer = csv.writer(file)
@@ -30,86 +30,64 @@ headers = ['vehicle',
             ]
 writer.writerow(headers)
 
+CATEGORIES = [
+    'Small overlap front: driver-side',
+    'Small overlap front: passenger-side',
+    'Moderate overlap front: original test',
+    'Side: original test',
+    'Side: updated test',
+    'Roof strength',
+    'Head restraints & seats',
+    'Headlights (varies by trim/option)',
+    'Front crash prevention: vehicle-to-vehicle',
+    'Front crash prevention: vehicle-to-pedestrian (day)',
+    'Front crash prevention: vehicle-to-pedestrian (night)',
+    'Seat belt reminders',
+    'LATCH ease of use'
+]
 
-for element in iihs:
+    # good
+def vehicle_name():
+    return iihs.find('h1', attrs={'class': 'head'}).text
     
-    # good
-    vehicle = (element.find('h1', attrs={
-    'class': 'head'}).text)
+print(vehicle_name())
 
-    # good
-    small_overlap_front_drivers_side = ''
-    small_overlap_front_drivers_side = element.find(string='Small overlap front: driver-side').parent.parent.find_next_sibling().text.strip()
+def extract_rows(table):
+    return table.find_all('tr')
 
-    # good
-    small_overlap_front_passenger_side = ''
-    small_overlap_front_passenger_side = element.find(string='Small overlap front: passenger-side').parent.parent.find_next_sibling().text.strip()
+rating_tables = iihs.find_all('table', attrs={"class": 'rating-table'})
+table_row_lists = map(extract_rows, rating_tables)
+rating_rows = [item for sub_list in table_row_lists for item in sub_list]
 
-    # good
-    moderate_overlap_front = ''
-    moderate_overlap_front = element.find(string='Moderate overlap front: original test').parent.parent.find_next_sibling().text.strip()
+rating_rows =  filter(lambda x: not x is None and x.find('a'), rating_rows)
 
-    # good
-    side_original = ''
-    side_original = element.find(string='Side: original test').parent.parent.find_next_sibling().text.strip()
+for rating_row in rating_rows:
+    category = rating_row.find('a').text
+    print(category)
+    rating = ???
+    # Is the rating a ca-rating or a rating-icon-block?
+    # choose strategy for getting value depending on type of rating
+    print(rating_row.find(''))
 
-    # needs testing on page without
-    side_updated_test = ''
-    if element.find(string='Side: updated test') == 'true': side_updated_test = element.find(string='Side: updated test')
+# for category in CATEGORIES:
+#     print(category)
 
-    # good
-    roof_strength = ''
-    roof_strength = element.find(string='Roof strength').parent.parent.find_next_sibling().text.strip()
 
-    head_restraints_and_seats = element.find(string='Head restraints & seats').parent.parent.find_next_sibling().text.strip()
-    # if element.find(string='Head restraints & seats') == 'true': head_restraints_and_seats = element.find(string='Head restraints & seats').parent.parent.find_next_sibling().text.strip()
-
-    headlight_good = (element.find('span', attrs={'aria-label': 'Good'}).text)
-
-    headlight_acceptable = (element.find('span', attrs={'aria-label': 'Acceptable'}).text)
-
-    headlight_marginal = (element.find('span', attrs={'aria-label': 'Marginal'}).text)
-    
-    headlight_poor = (element.find('span', attrs={'aria-label': 'Poor'}).text)
-
-    headlights = headlight_good + headlight_acceptable + headlight_marginal + headlight_poor
-
-    # needs testing on page without
-    front_crash_prevention_vehicle_to_vehicle = (element.find('div', attrs={'class': 'ca-rating'}))
-    # print(front_crash_prevention_vehicle_to_vehicle)
-
-    # needs testing on page without
-    front_crash_prevention_vehicle_to_pedestrian_day = (element.find('div', attrs={'class': 'fcp-superior'}).text)
-
-    # needs testing on page without
-    front_crash_prevention_vehicle_to_pedestrian_night = ''
-    if element.find(string='Front crash prevention: vehicle-to-pedestrian (night)') == 'true': front_crash_prevention_vehicle_to_pedestrian_night = element.find(string='Front crash prevention: vehicle-to-pedestrian (night)').parent.parent.find_next_sibling().text.strip()
-
-    # needs testing on page without
-    seat_belt_reminders = ''
-    if element.find(string='Seat belt reminders') == 'true': seat_belt_reminders = element.find(string='Seat belt reminders').parent.parent.find_next_sibling().text.strip()
-
-    # needs testing on page without
-    latch_ease_of_use = ''
-    if element.find(string='LATCH ease of use') == 'true': latch_ease_of_use = element.find(string='LATCH ease of use').parent.parent.find_next_sibling().text.strip()
-
-    # vehicle_img here
-
-    file = open('iihs_test.csv', 'a', newline='', encoding='utf-8')
-    writer = csv.writer(file)
-    headers = ([vehicle,
-                small_overlap_front_drivers_side,
-                small_overlap_front_passenger_side,
-                moderate_overlap_front,
-                side_original,
-                side_updated_test,
-                roof_strength,
-                head_restraints_and_seats,
-                headlights,
-                front_crash_prevention_vehicle_to_vehicle,
-                front_crash_prevention_vehicle_to_pedestrian_day,
-                front_crash_prevention_vehicle_to_pedestrian_night,
-                seat_belt_reminders,
-                latch_ease_of_use])
-    writer.writerow(headers)
-    file.close()
+    # file = open('iihs_test.csv', 'a', newline='', encoding='utf-8')
+    # writer = csv.writer(file)
+    # headers = ([vehicle,
+    #             small_overlap_front_drivers_side,
+    #             small_overlap_front_passenger_side,
+    #             moderate_overlap_front,
+    #             side_original,
+    #             side_updated_test,
+    #             roof_strength,
+    #             head_restraints_and_seats,
+    #             headlights,
+    #             front_crash_prevention_vehicle_to_vehicle,
+    #             front_crash_prevention_vehicle_to_pedestrian_day,
+    #             front_crash_prevention_vehicle_to_pedestrian_night,
+    #             seat_belt_reminders,
+    #             latch_ease_of_use])
+    # writer.writerow(headers)
+    # file.close()
