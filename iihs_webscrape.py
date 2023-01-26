@@ -31,6 +31,7 @@ headers = ['vehicle',
 writer.writerow(headers)
 
 CATEGORIES = [
+    'vehicle'
     'Small overlap front: driver-side',
     'Small overlap front: passenger-side',
     'Moderate overlap front: original test',
@@ -55,7 +56,7 @@ print(vehicle_name())
 def extract_rows(table):
     return table.find_all('tr')
 
-rating_tables = iihs.find_all('table', attrs={"class": 'rating-table'})
+rating_tables = iihs.find_all('table', attrs={'class': 'rating-table'})
 table_row_lists = map(extract_rows, rating_tables)
 rating_rows = [item for sub_list in table_row_lists for item in sub_list]
 
@@ -64,30 +65,43 @@ rating_rows =  filter(lambda x: not x is None and x.find('a'), rating_rows)
 for rating_row in rating_rows:
     category = rating_row.find('a').text
     print(category)
-    rating = ???
+    rating_div = rating_row.find('div', attrs={'class': 'rating-icon-block'})
+    # extract single rating
+    if rating_div:
+        # extract the aria label attribute value from the span elements
+        rating_spans = rating_row.find_all('span')
+        ratings = list(map(lambda x: x['aria-label'], rating_spans))
+        print(ratings)
+    else:
+        standard_system_row = rating_row.find_next_sibling()
+        ca_rating_div = standard_system_row.find('div').text.strip()
+        print(ca_rating_div)
+    
+        # rating = rating_div.find('div').text
+        # print(rating_div)
+
     # Is the rating a ca-rating or a rating-icon-block?
     # choose strategy for getting value depending on type of rating
-    print(rating_row.find(''))
 
 # for category in CATEGORIES:
 #     print(category)
 
 
-    # file = open('iihs_test.csv', 'a', newline='', encoding='utf-8')
-    # writer = csv.writer(file)
-    # headers = ([vehicle,
-    #             small_overlap_front_drivers_side,
-    #             small_overlap_front_passenger_side,
-    #             moderate_overlap_front,
-    #             side_original,
-    #             side_updated_test,
-    #             roof_strength,
-    #             head_restraints_and_seats,
-    #             headlights,
-    #             front_crash_prevention_vehicle_to_vehicle,
-    #             front_crash_prevention_vehicle_to_pedestrian_day,
-    #             front_crash_prevention_vehicle_to_pedestrian_night,
-    #             seat_belt_reminders,
-    #             latch_ease_of_use])
-    # writer.writerow(headers)
-    # file.close()
+#     file = open('iihs_test.csv', 'a', newline='', encoding='utf-8')
+#     writer = csv.writer(file)
+#     headers = ([vehicle,
+#                 small_overlap_front_drivers_side,
+#                 small_overlap_front_passenger_side,
+#                 moderate_overlap_front,
+#                 side_original,
+#                 side_updated_test,
+#                 roof_strength,
+#                 head_restraints_and_seats,
+#                 headlights,
+#                 front_crash_prevention_vehicle_to_vehicle,
+#                 front_crash_prevention_vehicle_to_pedestrian_day,
+#                 front_crash_prevention_vehicle_to_pedestrian_night,
+#                 seat_belt_reminders,
+#                 latch_ease_of_use])
+#     writer.writerow(headers)
+#     file.close()
