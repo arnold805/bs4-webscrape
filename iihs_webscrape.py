@@ -4,7 +4,7 @@ from bs4 import BeautifulSoup
 #  check for __iter__ magic method, therefore data is iterable
 # print(dir(iihs_index))
 
-url = requests.get('https://www.iihs.org/ratings/vehicle/volkswagen/golf-gti-4-door-hatchback/2022')
+url = requests.get('https://www.iihs.org/ratings/vehicle/honda/accord-4-door-sedan/2022')
 
 soup = BeautifulSoup(url.text, 'html.parser')
 # iihs = BeautifulSoup(html_doc, 'html.parser')
@@ -14,6 +14,7 @@ iihs = soup.find('div', attrs={'class': 'hero-body'})
 file = open('iihs_test.csv', 'w', newline='')
 writer = csv.writer(file)
 headers = ['vehicle',
+            'top_safety_pick',
             'small_overlap_front_drivers_side',
             'small_overlap_front_passenger_side',
             'moderate_overlap_front',
@@ -31,7 +32,8 @@ headers = ['vehicle',
 writer.writerow(headers)
 
 CATEGORIES = [
-    'vehicle'
+    'vehicle_name'
+    'top_safety_pick',
     'Small overlap front: driver-side',
     'Small overlap front: passenger-side',
     'Moderate overlap front: original test',
@@ -52,6 +54,20 @@ def vehicle_name():
     return iihs.find('h1', attrs={'class': 'head'}).text
     
 print(vehicle_name())
+
+def top_safety_pick():
+    tsp = iihs.find('span', attrs={'class': 'tsp'})
+    tsp_plus = iihs.find('span', attrs={'class': 'tspPlus'})
+
+    if (tsp):
+        return tsp.text
+    elif(tsp_plus):
+        return tsp_plus.text
+    else:
+        return
+    
+
+print(top_safety_pick())
 
 def extract_rows(table):
     return table.find_all('tr')
@@ -89,7 +105,7 @@ for rating_row in rating_rows:
 
 #     file = open('iihs_test.csv', 'a', newline='', encoding='utf-8')
 #     writer = csv.writer(file)
-#     headers = ([vehicle,
+#     headers = ([vehicle_name,
 #                 small_overlap_front_drivers_side,
 #                 small_overlap_front_passenger_side,
 #                 moderate_overlap_front,
