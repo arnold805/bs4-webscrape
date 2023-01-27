@@ -1,7 +1,6 @@
 # for element in iihs:
 
     # good
-    vehicle_name
 
     # good
     small_overlap_front_drivers_side = ''
