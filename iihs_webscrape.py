@@ -1,13 +1,9 @@
 import requests, csv
 from bs4 import BeautifulSoup
 
-#  check for __iter__ magic method, therefore data is iterable
-# print(dir(iihs_index))
-
 url = requests.get('https://www.iihs.org/ratings/vehicle/Subaru/forester-4-door-suv/2020')
 
 soup = BeautifulSoup(url.text, 'html.parser')
-# iihs = BeautifulSoup(html_doc, 'html.parser')
 
 iihs = soup.find('div', attrs={'class': 'hero-body'})
 
@@ -27,7 +23,7 @@ headers = ['vehicle',
             'front_crash_prevtion_vehicle_to_pedestrian_day',
             'front_crash_prevtion_vehicle_to_pedestrian_night',
             'seat_belt_reminders',
-            # 'latch_ease_of_use'
+            'latch_ease_of_use',
             ]
 writer.writerow(headers)
 
@@ -46,7 +42,7 @@ CATEGORIES = [
     'Front crash prevention: vehicle-to-pedestrian (day)',
     'Front crash prevention: vehicle-to-pedestrian (night)',
     'Seat belt reminders',
-    # 'LATCH ease of use'
+    'LATCH ease of use'
 ]
 
 def vehicle_name():
@@ -67,27 +63,14 @@ def top_safety_pick():
 
 print(top_safety_pick())
 
-# def latch_rating_plus():
-#     latch = iihs.find('div', attrs={'style': 'display: flex; justify-content: center; align-items: center;'})
-#     # print(latch_reg)
-#     # latch_plus = iihs.find('div', attrs={'style': 'display: flex; justify-content: center; align-items: center;'}).find('span', attrs={'class': 'gamp-plus'})
-#     # latch_plus = iihs.find('div', attrs={'style': 'display: flex; justify-content: center; align-items: center;'}).find('span', attrs={'class': 'gamp-plus'}).parent.find_next_sibling()
-
-#     if (latch_reg):
-#         return latch_reg.text
-#     # else:
-#     #     return iihs.find('div', attrs={'style': 'display: flex; justify-content: center; align-items: center;'}).find('span', attrs={'class': 'gamp-plus'})
-
-# print(latch_rating_plus())
-
 def latch():
     latch = iihs.find('div', attrs={'style': 'display: flex; justify-content: center; align-items: center;'})
     latch_plus = iihs.find('span', attrs={'class': 'gamp-plus'})
 
     if (latch):
-        return latch.text
+        return latch.text.strip()
     elif(latch_plus):
-        return latch_plus.text
+        return latch_plus.text.strip()
     else:
         return
 
@@ -104,24 +87,28 @@ rating_rows = [item for sub_list in table_row_lists for item in sub_list]
 rating_rows =  filter(lambda x: not x is None and x.find('a'), rating_rows)
 
 for rating_row in rating_rows:
-    category = rating_row.find('a').text
-    print(category)
-    rating_div = rating_row.find('div', attrs={'class': 'rating-icon-block'})
-    # extract single rating
-    if rating_div:
-        # extract the aria label attribute value from the span elements
-        rating_spans = rating_row.find_all('span')
-        ratings = list(map(lambda x: x['aria-label'], rating_spans))
-        print(ratings)
+    try:
+        category = rating_row.find('a').text
+        print(category)
+        rating_div = rating_row.find('div', attrs={'class': 'rating-icon-block'})
+        # extract single rating
+        if rating_div:
+            # extract the aria label attribute value from the span elements
+            rating_spans = rating_row.find_all('span')
+            ratings = list(map(lambda x: x['aria-label'], rating_spans))
+            print(ratings)
+        
+        else:
+            standard_system_row = rating_row.find_next_sibling()
+            ca_rating_div = standard_system_row.find('div').text.strip()
+            print(ca_rating_div)
+
+    except:
+        print('Error occured: KeyError: aria-label')
 
     # if plus_span:
     #     # ratings = list(map(lambda x: x['aria-label'], rating_spans))
     #     print(plus_span)
-        
-    else:
-        standard_system_row = rating_row.find_next_sibling()
-        ca_rating_div = standard_system_row.find('div').text.strip()
-        print(ca_rating_div)
     
         # rating = rating_div.find('div').text
         # print(rating_div)
@@ -132,22 +119,11 @@ for rating_row in rating_rows:
 # for category in CATEGORIES:
 #     print(category)
 
-
-#     file = open('iihs_test.csv', 'a', newline='', encoding='utf-8')
-#     writer = csv.writer(file)
-#     headers = ([vehicle_name,
-#                 small_overlap_front_drivers_side,
-#                 small_overlap_front_passenger_side,
-#                 moderate_overlap_front,
-#                 side_original,
-#                 side_updated_test,
-#                 roof_strength,
-#                 head_restraints_and_seats,
-#                 headlights,
-#                 front_crash_prevention_vehicle_to_vehicle,
-#                 front_crash_prevention_vehicle_to_pedestrian_day,
-#                 front_crash_prevention_vehicle_to_pedestrian_night,
-#                 seat_belt_reminders,
-#                 latch_ease_of_use])
-#     writer.writerow(headers)
-#     file.close()
+file = open('iihs_test.csv', 'a', newline='', encoding='utf-8')
+writer = csv.writer(file)
+header = ([vehicle_name(),
+            top_safety_pick(),
+            latch(),
+            ])
+writer.writerow(header)
+file.close()
