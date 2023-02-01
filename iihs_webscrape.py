@@ -1,7 +1,7 @@
 import requests, csv
 from bs4 import BeautifulSoup
 
-url = requests.get('https://www.iihs.org/ratings/vehicle/Subaru/forester-4-door-suv/2020')
+url = requests.get('https://www.iihs.org/ratings/vehicle/honda/civic-4-door-sedan/2023')
 
 soup = BeautifulSoup(url.text, 'html.parser')
 
@@ -27,28 +27,34 @@ headers = ['vehicle',
             ]
 writer.writerow(headers)
 
-CATEGORIES = [
-    'vehicle_name'
-    'top_safety_pick',
-    'Small overlap front: driver-side',
-    'Small overlap front: passenger-side',
-    'Moderate overlap front: original test',
-    'Side: original test',
-    'Side: updated test',
-    'Roof strength',
-    'Head restraints & seats',
-    'Headlights (varies by trim/option)',
-    'Front crash prevention: vehicle-to-vehicle',
-    'Front crash prevention: vehicle-to-pedestrian (day)',
-    'Front crash prevention: vehicle-to-pedestrian (night)',
-    'Seat belt reminders',
-    'LATCH ease of use'
-]
+# CATEGORIES = [
+#     'vehicle_name'
+#     'top_safety_pick',
+#     'Small overlap front: driver-side',
+#     'Small overlap front: passenger-side',
+#     'Moderate overlap front: original test',
+#     'Side: original test',
+#     'Side: updated test',
+#     'Roof strength',
+#     'Head restraints & seats',
+#     'Headlights (varies by trim/option)',
+#     'Front crash prevention: vehicle-to-vehicle',
+#     'Front crash prevention: vehicle-to-pedestrian (day)',
+#     'Front crash prevention: vehicle-to-pedestrian (night)',
+#     'Seat belt reminders',
+#     'LATCH ease of use'
+# ]
+
+HEADER = []
+
+file = open('iihs_test.csv', 'a', newline='', encoding='utf-8')
+writer = csv.writer(file)
 
 def vehicle_name():
     return iihs.find('h1', attrs={'class': 'head'}).text
     
 print(vehicle_name())
+HEADER.append(vehicle_name())
 
 def top_safety_pick():
     tsp = iihs.find('span', attrs={'class': 'tsp'})
@@ -60,22 +66,8 @@ def top_safety_pick():
         return tsp_plus.text
     else:
         return
-
+HEADER.append(top_safety_pick())
 print(top_safety_pick())
-
-def latch():
-    latch = iihs.find('div', attrs={'style': 'display: flex; justify-content: center; align-items: center;'})
-    latch_plus = iihs.find('span', attrs={'class': 'gamp-plus'})
-
-    if (latch):
-        return latch.text.strip()
-    elif(latch_plus):
-        return latch_plus.text.strip()
-    else:
-        return
-
-print(latch())
-
 
 def extract_rows(table):
     return table.find_all('tr')
@@ -97,33 +89,33 @@ for rating_row in rating_rows:
             rating_spans = rating_row.find_all('span')
             ratings = list(map(lambda x: x['aria-label'], rating_spans))
             print(ratings)
-        
+            HEADER.append(ratings)
+            # writer.writerow(header)
+
         else:
             standard_system_row = rating_row.find_next_sibling()
             ca_rating_div = standard_system_row.find('div').text.strip()
             print(ca_rating_div)
+            HEADER.append(ca_rating_div)
+            # writer.writerow(header)
 
     except:
         print('Error occured: KeyError: aria-label')
 
-    # if plus_span:
-    #     # ratings = list(map(lambda x: x['aria-label'], rating_spans))
-    #     print(plus_span)
-    
-        # rating = rating_div.find('div').text
-        # print(rating_div)
+def latch():
+    latch_r = iihs.find('div', attrs={'style': 'display: flex; justify-content: center; align-items: center;'})
+    latch_plus = iihs.find('span', attrs={'class': 'gamp-plus'})
 
-    # Is the rating a ca-rating or a rating-icon-block?
-    # choose strategy for getting value depending on type of rating
+    if(latch_plus):
+        return ('G+')
+    if (latch_r):
+        return latch_r.text.strip()
+    else:
+        return
+        
+HEADER.append(latch())
+print(latch())
 
-# for category in CATEGORIES:
-#     print(category)
+writer.writerow(HEADER)
 
-file = open('iihs_test.csv', 'a', newline='', encoding='utf-8')
-writer = csv.writer(file)
-header = ([vehicle_name(),
-            top_safety_pick(),
-            latch(),
-            ])
-writer.writerow(header)
 file.close()
